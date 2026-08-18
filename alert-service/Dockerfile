@@ -9,6 +9,6 @@ RUN mvn -q -pl alert-service -am -DskipTests package
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=build /workspace/alert-service/target/alert-service.jar app.jar
+COPY --from=build /workspace/alert-service/target/alert-service-exec.jar app.jar
 EXPOSE 8083
 ENTRYPOINT ["java", "-jar", "app.jar"]

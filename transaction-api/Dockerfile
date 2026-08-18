@@ -9,6 +9,6 @@ RUN mvn -q -pl transaction-api -am -DskipTests package
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=build /workspace/transaction-api/target/transaction-api.jar app.jar
+COPY --from=build /workspace/transaction-api/target/transaction-api-exec.jar app.jar
 EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -69,6 +69,17 @@
               <goals>
                 <goal>repackage</goal>
               </goals>
+              <!-- Without a classifier, repackage REPLACES the plain jar as the project's main
+                   artifact with the executable (BOOT-INF-nested) one — that swap runs during the
+                   package phase, before failsafe's integration-test phase, and broke Failsafe's
+                   classpath resolution on CI (NoClassDefFoundError for the module's own classes,
+                   only reproducible where Testcontainers can actually run). A classifier keeps
+                   the plain target/classes-based jar as the main artifact and produces the
+                   executable jar alongside it as target/<artifact>-exec.jar (see the Dockerfiles,
+                   which reference that file directly). -->
+              <configuration>
+                <classifier>exec</classifier>
+              </configuration>
             </execution>
           </executions>
         </plugin>

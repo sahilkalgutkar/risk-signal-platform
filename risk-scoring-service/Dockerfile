@@ -9,6 +9,6 @@ RUN mvn -q -pl risk-scoring-service -am -DskipTests package
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=build /workspace/risk-scoring-service/target/risk-scoring-service.jar app.jar
+COPY --from=build /workspace/risk-scoring-service/target/risk-scoring-service-exec.jar app.jar
 EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "app.jar"]
