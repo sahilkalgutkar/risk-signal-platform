@@ -1,0 +1,27 @@
+comment:
+  layout: "condensed_header, diff, flags, condensed_files"
+  behavior: default
+  require_changes: false
+
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+    patch:
+      default:
+        target: 80%
+
+flags:
+  common:
+    paths:
+      - common/src/main/
+  transaction-api:
+    paths:
+      - transaction-api/src/main/
+  risk-scoring-service:
+    paths:
+      - risk-scoring-service/src/main/
+  alert-service:
+    paths:
+      - alert-service/src/main/

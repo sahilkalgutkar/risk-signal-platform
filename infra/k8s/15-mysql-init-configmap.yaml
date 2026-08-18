@@ -1,0 +1,21 @@
+# Same database-per-service init script as infra/mysql/init.sql (docker-compose) —
+# see 10-configmap.yaml's comment for why one shared database doesn't work here.
+# No CREATE USER here: the mysql image already creates 'risksignal' from the
+# MYSQL_USER/MYSQL_PASSWORD env vars on 20-mysql.yaml's container (sourced
+# from the Secret) before this script runs — this just grants it access to
+# all three databases.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init
+  namespace: risk-signal
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS transactions;
+    CREATE DATABASE IF NOT EXISTS risk_scoring;
+    CREATE DATABASE IF NOT EXISTS alerts;
+
+    GRANT ALL PRIVILEGES ON transactions.* TO 'risksignal'@'%';
+    GRANT ALL PRIVILEGES ON risk_scoring.* TO 'risksignal'@'%';
+    GRANT ALL PRIVILEGES ON alerts.* TO 'risksignal'@'%';
+    FLUSH PRIVILEGES;

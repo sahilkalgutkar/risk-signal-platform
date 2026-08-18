@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # Testcontainers (MySQL + Kafka) spin up their own containers against
+      # the runner's Docker daemon — no `services:` block needed here.
+      - name: mvn verify (unit tests via surefire, Testcontainers ITs via failsafe)
+        run: ./mvnw -B verify
+
+      - name: Upload coverage (common)
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: common/target/site/jacoco/jacoco.xml
+          flags: common
+          fail_ci_if_error: false
+
+      - name: Upload coverage (transaction-api)
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: transaction-api/target/site/jacoco/jacoco.xml
+          flags: transaction-api
+          fail_ci_if_error: false
+
+      - name: Upload coverage (risk-scoring-service)
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: risk-scoring-service/target/site/jacoco/jacoco.xml
+          flags: risk-scoring-service
+          fail_ci_if_error: false
+
+      - name: Upload coverage (alert-service)
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: alert-service/target/site/jacoco/jacoco.xml
+          flags: alert-service
+          fail_ci_if_error: false
+
+  docker-compose-smoke-test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start the stack
+        run: docker compose up -d --build mysql kafka transaction-api risk-scoring-service alert-service
+      - name: Wait for transaction-api to become healthy
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8081/actuator/health && exit 0
+            sleep 5
+          done
+          echo "transaction-api never became healthy" && exit 1
+      - name: Submit a transaction and confirm it's stored
+        run: |
+          id=$(curl -sf -X POST http://localhost:8081/transactions \
+            -H "Content-Type: application/json" \
+            -d '{"accountId":"acct-ci","amount":50.00,"currency":"USD","merchantCountry":"US","accountCountry":"US"}' \
+            | tee /dev/stderr | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")
+          curl -sf "http://localhost:8081/transactions/$id"
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose logs

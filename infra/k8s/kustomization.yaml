@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: risk-signal
+resources:
+  - 00-namespace.yaml
+  - 10-configmap.yaml
+  # 11-secret.example.yaml is intentionally excluded — create the real
+  # risk-signal-secrets Secret with `kubectl create secret` (see its header
+  # comment) before applying this kustomization.
+  - 15-mysql-init-configmap.yaml
+  - 20-mysql.yaml
+  - 21-kafka.yaml
+  - 30-transaction-api.yaml
+  - 31-risk-scoring-service.yaml
+  - 32-alert-service.yaml
+  - 40-ingress.yaml

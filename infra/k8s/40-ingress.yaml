@@ -1,0 +1,23 @@
+# Only transaction-api is externally routed — risk-scoring-service and
+# alert-service are Kafka consumers with no public entry point; their
+# Services above exist for in-cluster Prometheus scraping, not ingress.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: risk-signal-ingress
+  namespace: risk-signal
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: risk-signal.local
+      http:
+        paths:
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: transaction-api
+                port:
+                  number: 8081
