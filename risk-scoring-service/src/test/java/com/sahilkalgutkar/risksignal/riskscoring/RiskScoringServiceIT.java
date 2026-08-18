@@ -33,7 +33,7 @@ import java.util.Properties;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
-@SpringBootTest
+@SpringBootTest(classes = RiskScoringServiceApplication.class)
 class RiskScoringServiceIT {
 
     @Container

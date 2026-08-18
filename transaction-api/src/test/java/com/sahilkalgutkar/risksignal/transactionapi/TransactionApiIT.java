@@ -32,7 +32,7 @@ import java.util.Properties;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = TransactionApiApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class TransactionApiIT {
 
     @Container
