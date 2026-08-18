@@ -19,7 +19,7 @@ jobs:
       # Testcontainers (MySQL + Kafka) spin up their own containers against
       # the runner's Docker daemon — no `services:` block needed here.
       - name: mvn verify (unit tests via surefire, Testcontainers ITs via failsafe)
-        run: ./mvnw -B verify
+        run: ./mvnw -B --fail-at-end verify
 
       - name: Upload coverage (common)
         uses: codecov/codecov-action@v5
