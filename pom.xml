@@ -88,12 +88,24 @@
             <excludes>
               <exclude>**/*IT.java</exclude>
             </excludes>
+            <!-- Our dependency graph (Spring Boot + Kafka + MySQL + Testcontainers) pushes the
+                 classpath past the length where Surefire falls back to a manifest-only jar to
+                 dodge OS command-line limits. That trick makes the forked JVM's classloader
+                 report only the temp jar from getURLs(), which breaks anything doing classpath
+                 scanning (Spring's annotation/config-class discovery included) — seen on CI as
+                 "Unable to find a @SpringBootConfiguration" and, once that was worked around,
+                 "Failed to find merged annotation for @BootstrapWith" one level deeper. Disabling
+                 the system classloader avoids the manifest-jar path entirely. -->
+            <useSystemClassLoader>false</useSystemClassLoader>
           </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>${maven-failsafe-plugin.version}</version>
+          <configuration>
+            <useSystemClassLoader>false</useSystemClassLoader>
+          </configuration>
           <executions>
             <execution>
               <goals>
