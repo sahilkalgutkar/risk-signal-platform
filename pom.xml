@@ -94,9 +94,12 @@
                  report only the temp jar from getURLs(), which breaks anything doing classpath
                  scanning (Spring's annotation/config-class discovery included) — seen on CI as
                  "Unable to find a @SpringBootConfiguration" and, once that was worked around,
-                 "Failed to find merged annotation for @BootstrapWith" one level deeper. Disabling
-                 the system classloader avoids the manifest-jar path entirely. -->
-            <useSystemClassLoader>false</useSystemClassLoader>
+                 "Failed to find merged annotation for @BootstrapWith" one level deeper.
+                 useSystemClassLoader=false (Surefire's own IsolatedClassLoader) was tried first
+                 and made things worse — alert-service's own classes went missing entirely
+                 (NoClassDefFoundError). Disabling just the manifest-only-jar fallback keeps the
+                 real -cp classpath, which Linux CI runners have plenty of room for. -->
+            <useManifestOnlyJar>false</useManifestOnlyJar>
           </configuration>
         </plugin>
         <plugin>
@@ -104,7 +107,7 @@
           <artifactId>maven-failsafe-plugin</artifactId>
           <version>${maven-failsafe-plugin.version}</version>
           <configuration>
-            <useSystemClassLoader>false</useSystemClassLoader>
+            <useManifestOnlyJar>false</useManifestOnlyJar>
           </configuration>
           <executions>
             <execution>
