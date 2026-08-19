@@ -24,6 +24,7 @@ spec:
           image: apache/kafka:3.7.1
           ports:
             - containerPort: 19092
+            - containerPort: 9093
           env:
             - name: KAFKA_NODE_ID
               value: "1"
@@ -38,7 +39,12 @@ spec:
             - name: KAFKA_CONTROLLER_LISTENER_NAMES
               value: "CONTROLLER"
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
-              value: "1@kafka:9093"
+              # localhost, not the kafka Service — broker and controller are the same process
+              # here, and routing self-registration through the Service creates a deadlock: the
+              # Service only forwards to Ready pods, but this pod can't become Ready until that
+              # registration succeeds. docker-compose doesn't have this failure mode (container
+              # DNS there isn't readiness-gated), which is why this only broke in Kubernetes.
+              value: "1@localhost:9093"
             - name: KAFKA_INTER_BROKER_LISTENER_NAME
               value: "PLAINTEXT"
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
@@ -47,9 +53,13 @@ spec:
               value: "true"
           readinessProbe:
             exec:
+              # kafka-broker-api-versions.sh boots a JVM per invocation — the 1s default exec
+              # probe timeout kills it before it can even connect, which reads as a probe
+              # failure but is really just "didn't finish in time."
               command: ["/opt/kafka/bin/kafka-broker-api-versions.sh", "--bootstrap-server", "localhost:19092"]
             initialDelaySeconds: 15
             periodSeconds: 10
+            timeoutSeconds: 10
           resources:
             requests:
               cpu: 250m
@@ -67,5 +77,6 @@ spec:
   selector:
     app: kafka
   ports:
-    - port: 19092
+    - name: broker
+      port: 19092
       targetPort: 19092
