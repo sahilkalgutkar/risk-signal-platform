@@ -94,6 +94,10 @@ docker compose up --build
 | Prometheus                              | http://localhost:9090         |
 | Kibana                                  | http://localhost:5601         |
 
+Grafana is set to anonymous admin access locally (`GF_AUTH_ANONYMOUS_ENABLED`
+in `docker-compose.yml`) — no login needed, you land straight on the
+provisioned dashboard.
+
 Try the whole event chain end to end:
 
 ```bash
