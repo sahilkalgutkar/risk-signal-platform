@@ -85,14 +85,32 @@ To run the whole platform, including Kafka, MySQL, Prometheus/Grafana, and the E
 docker compose up --build
 ```
 
-| Service                                | URL                          |
-|-----------------------------------------|-------------------------------|
-| transaction-api                         | http://localhost:8081         |
-| risk-scoring-service actuator           | http://localhost:8082/actuator |
-| alert-service actuator                  | http://localhost:8083/actuator |
-| Grafana (dashboard auto-provisioned)    | http://localhost:3000         |
-| Prometheus                              | http://localhost:9090         |
-| Kibana                                  | http://localhost:5601         |
+| Service                                | URL                          | Host port override |
+|-----------------------------------------|-------------------------------|---|
+| transaction-api                         | http://localhost:8081         | `TRANSACTION_API_HOST_PORT` |
+| risk-scoring-service actuator           | http://localhost:8082/actuator | `RISK_SCORING_HOST_PORT` |
+| alert-service actuator                  | http://localhost:8083/actuator | `ALERT_SERVICE_HOST_PORT` |
+| Grafana (dashboard auto-provisioned)    | http://localhost:3000         | `GRAFANA_HOST_PORT` |
+| Prometheus                              | http://localhost:9090         | `PROMETHEUS_HOST_PORT` |
+| Kibana                                  | http://localhost:5601         | `KIBANA_HOST_PORT` |
+| MySQL                                   | localhost:3306                | `MYSQL_HOST_PORT` |
+| Kafka (external listener)               | localhost:9092                | `KAFKA_HOST_PORT` |
+| Elasticsearch                           | http://localhost:9200         | `ELASTICSEARCH_HOST_PORT` |
+
+The stack publishes MySQL on 3306, Kafka on 9092 and Elasticsearch on 9200,
+which on a working machine are usually already taken by something. Every host
+port is a variable, so set the ones that clash inline or in a `.env` file next
+to `docker-compose.yml`:
+
+```bash
+MYSQL_HOST_PORT=13306 KAFKA_HOST_PORT=19092 GRAFANA_HOST_PORT=3100 \
+  docker compose up --build
+```
+
+Only the host side moves — inside the compose network the services still find
+each other on the standard ports, and Kafka's advertised external listener
+follows `KAFKA_HOST_PORT` so a client on the host is told to keep talking to
+the port it actually connected on.
 
 Grafana is set to anonymous admin access locally (`GF_AUTH_ANONYMOUS_ENABLED`
 in `docker-compose.yml`) — no login needed, you land straight on the
