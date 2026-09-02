@@ -100,7 +100,7 @@ docker compose up --build
 The stack publishes MySQL on 3306, Kafka on 9092 and Elasticsearch on 9200,
 which on a working machine are usually already taken by something. Every host
 port is a variable, so set the ones that clash inline or in a `.env` file next
-to `docker-compose.yml`:
+to `docker-compose.yml` — `.env.example` lists all nine with their defaults:
 
 ```bash
 MYSQL_HOST_PORT=13306 KAFKA_HOST_PORT=19092 GRAFANA_HOST_PORT=3100 \
